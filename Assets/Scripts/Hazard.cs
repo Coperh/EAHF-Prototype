@@ -5,9 +5,12 @@ public class Hazard : MonoBehaviour
 {
 
 
-    private const float max_dist = 5.0f;
+    private const float max_dist = 10.0f;
 
     private Gamepad pad;
+
+
+
 
 
 
@@ -39,6 +42,9 @@ public class Hazard : MonoBehaviour
     void Update()
     {
 
+        //transform.Translate(transform.forward * 4 * Time.deltaTime);
+
+
         //Vector3 old_pos = transform.position;
         //float x_pos = Mathf.PingPong(Time.time, 8.0f) - 4f;
         //transform.position = new Vector3(x_pos, old_pos.y, old_pos.z);
@@ -46,9 +52,12 @@ public class Hazard : MonoBehaviour
         float left_intensity = GetIntensity(PlayerManager.instance.left_sensor.transform.position);
         float right_intensity = GetIntensity(PlayerManager.instance.right_sensor.transform.position);
 
+
+
+
         pad = Gamepad.current;
 
-        //Debug.Log($"Vib: L {left_intensity} R {right_intensity}");
+        Debug.Log($"Vib: L {left_intensity} R {right_intensity}");
 
         if (pad != null)
         {
