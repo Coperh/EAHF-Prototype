@@ -1,5 +1,8 @@
+using System;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 public class Hazard : MonoBehaviour
 {
@@ -42,31 +45,42 @@ public class Hazard : MonoBehaviour
     void Update()
     {
 
-        //transform.Translate(transform.forward * 4 * Time.deltaTime);
+        transform.transform.Translate(Vector3.forward * 4 * Time.deltaTime);
 
 
-        //Vector3 old_pos = transform.position;
-        //float x_pos = Mathf.PingPong(Time.time, 8.0f) - 4f;
-        //transform.position = new Vector3(x_pos, old_pos.y, old_pos.z);
-
-        float left_intensity = GetIntensity(PlayerManager.instance.left_sensor.transform.position);
-        float right_intensity = GetIntensity(PlayerManager.instance.right_sensor.transform.position);
+        Vector3 player_pos = PlayerManager.instance.transform.position;
+        float distance = Vector3.Distance(transform.position, player_pos);
 
 
+        // Get normalised direction, ignoring y-axis
+        Vector3 dir = Vector3.Normalize(Vector3.Scale(player_pos - transform.position, new Vector3(1, 0, 1)));
 
+
+        // Get angle between foward and direction, make value between 0 and 180  (for direcitons from behind, does not work with in front)
+        float angle = Vector3.SignedAngle(dir, PlayerManager.instance.transform.forward, Vector3.up) + 90.0f;
+
+
+        // 1 is fully right, 0 is fully left
+        float right_percentage = angle / 180.0f;
+        float left_percentage = 1.0f - right_percentage;
+
+        //float left_intensity = GetIntensity(PlayerManager.instance.left_sensor.transform.position);
+        //float right_intensity = GetIntensity(PlayerManager.instance.right_sensor.transform.position);
+
+        float intensity = Mathf.Clamp((max_dist - distance)/max_dist, 0.0f, 1.0f) * 2.0f;
 
         pad = Gamepad.current;
 
-        Debug.Log($"Vib: L {left_intensity} R {right_intensity}");
+        Debug.Log($"Vib: L {left_percentage} R {right_percentage}");
 
         if (pad != null)
         {
-            pad.SetMotorSpeeds(left_intensity, right_intensity);
+            pad.SetMotorSpeeds(
+                left_percentage * intensity,
+                right_percentage * intensity
+                );
         }
-
     }
-
-
 
 
     private void OnDestroy()
