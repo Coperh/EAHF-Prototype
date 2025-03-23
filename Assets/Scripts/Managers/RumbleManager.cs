@@ -2,12 +2,13 @@ using System.Collections;
 using UnityEditor.ShaderGraph;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.DualShock;
 
 public class RumbleManager : MonoBehaviour
 {
     public static RumbleManager instance;
 
-    private Gamepad pad;
+    private DualSenseGamepadHID pad;
 
     private Coroutine stopRumbleAfterTime;
 
@@ -23,7 +24,7 @@ public class RumbleManager : MonoBehaviour
     public void RumblePulse(float lowfreq, float highfreq, float duration)
     {
 
-        pad = Gamepad.current;
+        pad = (DualSenseGamepadHID)DualSenseGamepadHID.current;
 
         if (pad != null)
         {

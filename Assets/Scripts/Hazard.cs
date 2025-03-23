@@ -2,6 +2,7 @@ using System;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.DualShock;
 using UnityEngine.UIElements;
 
 public class Hazard : MonoBehaviour
@@ -10,7 +11,7 @@ public class Hazard : MonoBehaviour
 
     private const float max_dist = 10.0f;
 
-    private Gamepad pad;
+    private DualSenseGamepadHID pad;
 
 
 
@@ -45,7 +46,7 @@ public class Hazard : MonoBehaviour
     void Update()
     {
 
-        transform.transform.Translate(Vector3.forward * 4 * Time.deltaTime);
+        //transform.transform.Translate(Vector3.forward * 4 * Time.deltaTime);
 
 
         Vector3 player_pos = PlayerManager.instance.transform.position;
@@ -69,15 +70,16 @@ public class Hazard : MonoBehaviour
 
         float intensity = Mathf.Clamp((max_dist - distance)/max_dist, 0.0f, 1.0f) * 2.0f;
 
-        pad = Gamepad.current;
+        pad = (DualSenseGamepadHID)DualSenseGamepadHID.current;
 
         Debug.Log($"Vib: L {left_percentage} R {right_percentage}");
 
         if (pad != null)
         {
-            pad.SetMotorSpeeds(
+            pad.SetMotorSpeedsAndLightBarColor(
                 left_percentage * intensity,
-                right_percentage * intensity
+                right_percentage * intensity,
+                Color.green
                 );
         }
     }
@@ -85,11 +87,15 @@ public class Hazard : MonoBehaviour
 
     private void OnDestroy()
     {
-        pad = Gamepad.current;
+        pad = (DualSenseGamepadHID)DualSenseGamepadHID.current;
 
         if (pad != null)
         {
-            pad.SetMotorSpeeds(0.0f, 0.0f);
+            pad.SetMotorSpeedsAndLightBarColor(
+                0.0f, 
+                0.0f,
+                Color.red
+                );
         }
     }
 }
