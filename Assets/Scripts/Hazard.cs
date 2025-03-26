@@ -85,17 +85,4 @@ public class Hazard : MonoBehaviour
     }
 
 
-    private void OnDestroy()
-    {
-        pad = (DualSenseGamepadHID)DualSenseGamepadHID.current;
-
-        if (pad != null)
-        {
-            pad.SetMotorSpeedsAndLightBarColor(
-                0.0f, 
-                0.0f,
-                Color.red
-                );
-        }
-    }
 }
