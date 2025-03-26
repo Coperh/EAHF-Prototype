@@ -94,30 +94,43 @@ public class GameManager : MonoBehaviour
     // if training mode. Some features only available in training or test mode
     private bool is_training = true;
 
+    // can guesss and record player input
+    private bool can_guess = false;
 
+    private float currCountdownValue;
+
+
+    // ------------------------------------------------
+    // =========== Acutal code starts Here  ===========
+    // ------------------------------------------------
+
+
+    // Creates hazard at a position with a direction
     void CreateHazard(Vector3 start, Vector3 end)
     {
         hazard = Instantiate(hazardPrefab);
         direction = Vector3.Normalize(end - start);
 
-        // 5 seconds away moving at a speed of 2
+        // move back so that it hits the why Axis at the Same Time
         hazard.transform.position = end + (direction * -distance);
 
         Debug.Log($"Created ball at positon{hazard.transform.position} with direction {direction}");
     }
 
 
-    private float currCountdownValue;
+    
+
+
+    // creats object, manages countdown, removes object
     public IEnumerator RunRound(float countdownValue)
     {
 
+        can_guess = true;
 
         Vector3 start_pos = GetStartPoint(starting_position);
         Vector3 end_pos = GetHitPoint(is_hit);
 
         CreateHazard(start_pos, end_pos);
-
-
 
         currCountdownValue = countdownValue;
 
@@ -130,33 +143,81 @@ public class GameManager : MonoBehaviour
         }
 
 
+        can_guess = false;
+        yield return new WaitForSeconds(1.0f);
+
+        // TODO: check if guess was right
+
 
         // remove hazard object
         Destroy(hazard);
         hazard = null;
+
         rumbleManager.ResetRumble();
+
     }
 
+
+    private float time_between_rounds = 2.0f;
 
     IEnumerator StartRounds()
     {
+        // TODO:
+        // Needs to determin the number of rounds plus change the target (and starting position)
+        // needs to detect if person is hit or not
+        // needs to record score
 
         yield return RunRound(time-1.0f);
+        yield return new WaitForSeconds(time_between_rounds);
 
+        is_hit = PlayerHit.LeftMiss;
+
+        
+        yield return RunRound(time - 1.0f);
+        yield return new WaitForSeconds(time_between_rounds);
+
+        is_hit = PlayerHit.RightMiss;
+
+        
+        yield return RunRound(time - 1.0f);
+        yield return new WaitForSeconds(time_between_rounds);
+
+        ResetGame();
+    }
+
+
+    public void StartTest()
+    {
+        is_training = false;
+        StartGame();
+    }
+
+    public void StartTraining()
+    {
+        is_training = true;
+        StartGame();
 
     }
 
 
-
-    void StartGame()
+    public void StartGame()
     {
 
         MainMenu.SetActive(false);
         GameHUD.SetActive(true);
         ExperimentHUD.SetActive(!is_training);
 
-
         StartCoroutine(StartRounds());
+    }
+
+
+    public void ResetGame()
+    {
+
+        // Enable main menu and disable everything else
+        MainMenu.SetActive(true);
+        GameHUD.SetActive(false);
+        ExperimentHUD.SetActive(false);
     }
 
 
@@ -175,25 +236,50 @@ public class GameManager : MonoBehaviour
             rumbleManager = RumbleManager.instance;
         }
 
-        // Enable main menu and disable everything else
-        MainMenu.SetActive(true);
-        GameHUD.SetActive(false);
-        ExperimentHUD.SetActive(false);
+        ResetGame();
 
-        StartGame();
+    }
 
+
+    private void FixedUpdate()
+    {
+        if (hazard is not null)
+        {
+            hazard.transform.Translate(direction * speed * Time.deltaTime);
+
+        }
     }
 
 
     private void Update()
     {
-
-        if (hazard is not null)
+        if (can_guess)
         {
-            hazard.transform.Translate(direction * speed * Time.deltaTime);
-            rumbleManager.DistanceRumble(player.transform.position, hazard.transform.position, 5.0f);
+
+            // TODO: 
+            // record hit (will need to create aciton)
+            //if (InputManager.instance.controls.Rumble.RumbleAction.WasPerformedThisFrame())
+            //{
+
+            //}
+
+            // record left miss?
+
+            // record right miss?
 
         }
     }
 
+
+
+    private void LateUpdate()
+    {
+
+        if (hazard is not null)
+        {
+            // needs to be in late update (otherwise will not stop)
+            rumbleManager.DistanceRumble(player.transform.position, hazard.transform.position, 10.0f);
+
+        }
+    }
 }
