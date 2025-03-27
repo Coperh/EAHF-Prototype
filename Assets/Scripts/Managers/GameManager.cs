@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using TMPro;
@@ -19,6 +20,9 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     private TMP_Text countdownDisplay;
+
+    [SerializeField]
+    private TMP_Text guessDisplay;
 
     [Header("Menus")]
     [SerializeField]
@@ -52,6 +56,7 @@ public class GameManager : MonoBehaviour
     private DualSenseGamepadHID pad;
     private PlayerManager player;
     private RumbleManager rumbleManager;
+    private Scoreboard scoreboard;
 
 
     // Refernece posiotns
@@ -92,12 +97,19 @@ public class GameManager : MonoBehaviour
 
 
     // if training mode. Some features only available in training or test mode
-    private bool is_training = true;
+    public bool is_training = true;
 
     // can guesss and record player input
     private bool can_guess = false;
 
     private float currCountdownValue;
+
+    private bool current_guess = false;
+
+    public int total_training_rounds = 10; // Should be divisible by 2
+    
+    public int total_testing_rounds = 20; // Should be divisible by 2
+    
 
 
     // ------------------------------------------------
@@ -126,6 +138,11 @@ public class GameManager : MonoBehaviour
     {
 
         can_guess = true;
+        current_guess = false;
+        guessDisplay.SetText($"Guess: Miss");
+
+        // subscribe to event
+        InputManager.instance.OnButtonPressed += HandleButtonPress;
 
         Vector3 start_pos = GetStartPoint(starting_position);
         Vector3 end_pos = GetHitPoint(is_hit);
@@ -144,9 +161,19 @@ public class GameManager : MonoBehaviour
 
 
         can_guess = false;
-        yield return new WaitForSeconds(1.0f);
 
-        // TODO: check if guess was right
+        Debug.Log($"Guess: {current_guess}; Hit: {is_hit}");
+        if ((is_hit == PlayerHit.Hit && current_guess) || (is_hit == PlayerHit.LeftMiss && !current_guess) || (is_hit == PlayerHit.RightMiss && !current_guess))
+            scoreboard.AddPoints(1);
+        
+        
+        
+        scoreDisplay.SetText($"Score: {scoreboard.GetCurrentScore().ToString()}");
+
+        yield return new WaitForSeconds(1.0f);
+        
+        // unsubscribe from event
+        InputManager.instance.OnButtonPressed -= HandleButtonPress;
 
 
         // remove hazard object
@@ -158,30 +185,61 @@ public class GameManager : MonoBehaviour
     }
 
 
+    private void HandleButtonPress()
+    {
+        if(can_guess)
+        {
+            current_guess = !current_guess;
+            if (current_guess)
+                guessDisplay.SetText($"Guess: Hit");
+            else
+                guessDisplay.SetText($"Guess: Miss");
+        }
+    }
+
     private float time_between_rounds = 2.0f;
 
     IEnumerator StartRounds()
     {
-        // TODO:
-        // Needs to determin the number of rounds plus change the target (and starting position)
-        // needs to detect if person is hit or not
-        // needs to record score
+        int total_rounds = is_training ? total_training_rounds : total_testing_rounds;
+        List<PlayerHit> hitPool = new List<PlayerHit>();
 
-        yield return RunRound(time-1.0f);
-        yield return new WaitForSeconds(time_between_rounds);
+        for (int i = 0; i < total_rounds / 2; i++)
+            hitPool.Add(PlayerHit.Hit);
 
-        is_hit = PlayerHit.LeftMiss;
-
+        int missCount = total_rounds / 2;
+        int leftMissCount = missCount / 2;
+        int rightMissCount = missCount / 2;
         
-        yield return RunRound(time - 1.0f);
-        yield return new WaitForSeconds(time_between_rounds);
+        if (missCount % 2 != 0)
+        {
+            if (UnityEngine.Random.value > 0.5f)
+                leftMissCount++;
+            else
+                rightMissCount++;
+        }
 
-        is_hit = PlayerHit.RightMiss;
+        for (int i = 0; i < leftMissCount; i++)
+            hitPool.Add(PlayerHit.LeftMiss);
+        for (int i = 0; i < rightMissCount; i++)
+            hitPool.Add(PlayerHit.RightMiss);
 
+        for (int i = 0; i < hitPool.Count; i++)
+        {
+            int randomIndex = UnityEngine.Random.Range(i, hitPool.Count);
+            PlayerHit temp = hitPool[i];
+            hitPool[i] = hitPool[randomIndex];
+            hitPool[randomIndex] = temp;
+        }
+
+        foreach (PlayerHit hitType in hitPool)
+        {
+            is_hit = hitType;
+            yield return RunRound(time - 1.0f);
+            yield return new WaitForSeconds(time_between_rounds);
+        }
         
-        yield return RunRound(time - 1.0f);
-        yield return new WaitForSeconds(time_between_rounds);
-
+        scoreboard.ExportScoreToFile();
         ResetGame();
     }
 
@@ -206,6 +264,8 @@ public class GameManager : MonoBehaviour
         MainMenu.SetActive(false);
         GameHUD.SetActive(true);
         ExperimentHUD.SetActive(!is_training);
+        scoreboard.ResetScore();
+        scoreDisplay.SetText($"Score: 0");
 
         StartCoroutine(StartRounds());
     }
@@ -218,6 +278,8 @@ public class GameManager : MonoBehaviour
         MainMenu.SetActive(true);
         GameHUD.SetActive(false);
         ExperimentHUD.SetActive(false);
+        scoreboard.ResetScore();
+        scoreDisplay.SetText($"Score: 0");
     }
 
 
@@ -234,6 +296,10 @@ public class GameManager : MonoBehaviour
         if (rumbleManager == null)
         {
             rumbleManager = RumbleManager.instance;
+        }
+        if (scoreboard == null)
+        {
+            scoreboard = Scoreboard.Instance;
         }
 
         ResetGame();
