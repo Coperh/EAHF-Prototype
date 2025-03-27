@@ -2342,7 +2342,8 @@ MonoBehaviour:
   ExperimentHUD: {fileID: 347491993}
   hazardPrefab: {fileID: 1975457108487340, guid: ec3e8f3ed27e2244caaedaf589590a03, type: 3}
   is_training: 1
-  total_rounds: 10
+  total_training_rounds: 2
+  total_testing_rounds: 4
 --- !u!4 &2106427562
 Transform:
   m_ObjectHideFlags: 0

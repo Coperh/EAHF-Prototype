@@ -239,7 +239,7 @@ public class GameManager : MonoBehaviour
             yield return new WaitForSeconds(time_between_rounds);
         }
         
-        scoreboard.ExportScoreToFile();
+        if(!is_training) scoreboard.ExportScoreToFile();
         ResetGame();
     }
 
