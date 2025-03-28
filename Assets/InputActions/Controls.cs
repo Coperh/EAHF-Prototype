@@ -155,7 +155,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""78f74db3-779f-4f25-8aba-50dc1a2acda0"",
-                    ""path"": ""<DualShockGamepad>/buttonWest"",
+                    ""path"": ""<DualShockGamepad>/buttonSouth"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
