@@ -40,6 +40,8 @@ public class Scoreboard : MonoBehaviour
         string folderPath = Path.Combine(Application.dataPath, "Scores", subfolder);
         string filePath = Path.Combine(folderPath, $"{fileName}_{System.DateTime.Now:yyyyddMM_HHmmss}.txt");
 
+        Debug.Log($"Exporting Score to {filePath}");
+
         // Create directory if it doesn't exist
         if (!Directory.Exists(folderPath))
         {
@@ -50,7 +52,7 @@ public class Scoreboard : MonoBehaviour
         }
 
         // Prepare file content
-        string content = $"Score: {currentScore}\n" +
+        string content = $"Score: {currentScore} \n" +
                         $"Timestamp: {System.DateTime.Now}\n";
 
         try
