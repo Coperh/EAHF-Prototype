@@ -1,7 +1,5 @@
 using System.Collections;
-using UnityEditor.ShaderGraph;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.DualShock;
 
 public class RumbleManager : MonoBehaviour
@@ -75,7 +73,7 @@ public class RumbleManager : MonoBehaviour
 
         pad = (DualSenseGamepadHID)DualSenseGamepadHID.current;
 
-        //Debug.Log($"Vib: L {left_percentage} R {right_percentage}");
+        Debug.Log($"Vib: L {left_percentage} R {right_percentage} I {intensity}");
 
         if (pad != null)
         {
