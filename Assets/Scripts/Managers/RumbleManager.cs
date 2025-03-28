@@ -62,18 +62,19 @@ public class RumbleManager : MonoBehaviour
         // Get angle between foward and direction, make value between 0 and 180  (for direcitons from behind, does not work with in front)
         float angle = Vector3.SignedAngle(dir, PlayerManager.instance.transform.forward, Vector3.up) + 90.0f;
 
-
+        angle = (angle - 90.0f) * 2.0f + 90.0f;
+        // Debug.Log($"Angle: {angle}");
         // 1 is fully right, 0 is fully left
         float right_percentage = angle / 180.0f;
         float left_percentage = 1.0f - right_percentage;
 
 
         // TODO: Could be improved, not enough different currently I think. 
-        float intensity = Mathf.Clamp((max_dist - distance) / max_dist, 0.0f, 1.0f) * 2.0f;
+        float intensity = Mathf.Clamp((max_dist - distance) / max_dist, 0.0f, 1.0f) * 1.0f;
 
         pad = (DualSenseGamepadHID)DualSenseGamepadHID.current;
 
-        Debug.Log($"Vib: L {left_percentage} R {right_percentage} I {intensity}");
+        // Debug.Log($"Vib: L {left_percentage} R {right_percentage} I {intensity}");
 
         if (pad != null)
         {

@@ -50,7 +50,7 @@ public class GameManager : MonoBehaviour
     // Further away, the faster it seems
     // Should probably be divisible but not necessarilly
     private const float distance = 10;
-    private const float time = 5.0f;
+    private const float time = 7.0f;
     private const float speed = distance / time;
 
     private DualSenseGamepadHID pad;
@@ -60,7 +60,7 @@ public class GameManager : MonoBehaviour
 
 
     // Refernece posiotns
-    private static float miss_distance = 3.0f;
+    private static float miss_distance = 5.0f;
     
     // Direciton of moving project
     private Vector3 direction;
@@ -126,7 +126,7 @@ public class GameManager : MonoBehaviour
         // move back so that it hits the why Axis at the Same Time
         hazard.transform.position = end + (direction * -distance);
 
-        Debug.Log($"Created ball at positon{hazard.transform.position} with direction {direction}");
+        // Debug.Log($"Created ball at positon{hazard.transform.position} with direction {direction}");
     }
 
 
